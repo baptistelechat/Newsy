@@ -3,11 +3,13 @@ import Parser from "rss-parser";
 import { bot, subscribers } from "./bot";
 import { APP_CONFIG } from "./config";
 import { formatDate } from "./utils";
+import { loadSentArticles, saveSentArticles } from "./storage";
 
 const parser = new Parser();
 const WEEKLY_CRON_TASK = "0 9 * * 1"; // chaque lundi à 9h
 // const WEEKLY_CRON_TASK = "*/30 * * * * *"; // chaque 30 secondes
 const DAILY_CRON_TASK = "0 6-22 * * 1-5"; // 6h à 22h du lundi au vendredi
+// const DAILY_CRON_TASK = "*/30 * * * * *"; // chaque 30 secondes
 
 // 🔹 Hebdo : chaque lundi à 9h
 cron.schedule(WEEKLY_CRON_TASK, async () => {
@@ -75,34 +77,30 @@ cron.schedule(WEEKLY_CRON_TASK, async () => {
 // 🔹 Quotidien : tous les jours de 6h à 22h du lundi au vendredi
 cron.schedule(DAILY_CRON_TASK, async () => {
   try {
-    const allItems: {
-      title: string;
-      link: string;
-      pubDate?: string;
-      source: string;
-    }[] = [];
+    const sent = loadSentArticles(); // articles déjà envoyés
+    const allItems: { title: string; link: string; pubDate?: string; source: string }[] = [];
 
     for (const feedUrl of APP_CONFIG.defaultFeeds) {
       const feed = await parser.parseURL(feedUrl);
-      const items = feed.items.slice(0, 5).map((i) => ({
-        title: i.title || "Untitled",
-        link: i.link || "",
-        pubDate: i.pubDate || "",
-        source: feed.title || feedUrl,
-      }));
+      const items = feed.items
+        .filter((i) => i.link && !sent[i.link!]) // filtrer ceux déjà envoyés
+        .slice(0, 5)
+        .map((i) => ({
+          title: i.title || "Untitled",
+          link: i.link!,
+          pubDate: i.pubDate || "",
+          source: feed.title || feedUrl,
+        }));
       allItems.push(...items);
     }
 
-    // Trier les articles par date décroissante
-    allItems.sort(
-      (a, b) =>
-        new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime()
-    );
+    if (allItems.length === 0) return;
 
+    allItems.sort((a, b) => new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime());
     const latest = allItems.slice(0, 10);
 
     const message =
-      "🗞️ <b>Latest news</b>\n\n" +
+      "🆕 <b>Nouvelles publications</b>\n\n" +
       latest
         .map(
           (item, i) =>
@@ -118,13 +116,14 @@ cron.schedule(DAILY_CRON_TASK, async () => {
         .join("\n\n");
 
     for (const chatId of subscribers) {
-      await bot.sendMessage(chatId, message, {
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      });
+      await bot.sendMessage(chatId, message, { parse_mode: "HTML", disable_web_page_preview: true });
     }
 
-    console.log(`✅ Daily news sent (${latest.length} articles)`);
+    // Marquer les articles comme envoyés
+    latest.forEach((item) => (sent[item.link] = true));
+    saveSentArticles(sent);
+
+    console.log(`✅ Daily news sent (${latest.length} new articles)`);
   } catch (err) {
     console.error("❌ Error in daily scheduler:", err);
   }
