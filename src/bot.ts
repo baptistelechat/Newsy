@@ -1,7 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import Parser from "rss-parser";
 import { APP_CONFIG } from "./config";
-import { feeds } from "./feeds";
 import { loadSubscribers, saveSubscribers } from "./storage";
 import { formatDate } from "./utils";
 
@@ -9,6 +8,13 @@ const bot = new TelegramBot(process.env.TG_TOKEN!, { polling: true });
 const parser = new Parser();
 
 let subscribers = loadSubscribers();
+
+bot.setMyCommands([
+  { command: "start", description: "S'abonner aux actualités" },
+  { command: "stop", description: "Se désabonner" },
+  { command: "latest", description: "Afficher les dernières actus" },
+  { command: "help", description: "Afficher l'aide" },
+]);
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id.toString();
@@ -18,7 +24,7 @@ bot.onText(/\/start/, (msg) => {
   }
   bot.sendMessage(
     chatId,
-    `👋 Bienvenue sur <b>${APP_CONFIG.name}</b> !\n${APP_CONFIG.description}\n\nCommandes disponibles :\n/start → S’abonner\n/stop → Se désabonner\n/latest → Dernières actus`,
+    `👋 Bienvenue sur <b>${APP_CONFIG.name}</b> !\n${APP_CONFIG.description}\n\nCommandes disponibles :\n/start → S'abonner aux actualités\n/stop → Se désabonner\n/latest → Afficher les dernières actus\n/help → Afficher l'aide`,
     { parse_mode: "HTML" }
   );
 });
@@ -80,6 +86,20 @@ bot.onText(/\/latest/, async (msg) => {
     console.error(err);
     bot.sendMessage(msg.chat.id, "⚠️ Impossible de récupérer les articles.");
   }
+});
+
+
+bot.onText(/\/help/, (msg) => {
+  const chatId = msg.chat.id.toString();
+  if (!subscribers.includes(chatId)) {
+    subscribers.push(chatId);
+    saveSubscribers(subscribers);
+  }
+  bot.sendMessage(
+    chatId,
+    `🤔 Besoin d'aides ?\n\nCommandes disponibles :\n/start → S'abonner aux actualités\n/stop → Se désabonner\n/latest → Afficher les dernières actus\n/help → Afficher l'aide`,
+    { parse_mode: "HTML" }
+  );
 });
 
 export { bot, subscribers };
