@@ -1,8 +1,11 @@
 import TelegramBot from "node-telegram-bot-api";
 import Parser from "rss-parser";
 import { APP_CONFIG } from "./config";
-import { loadSubscribers, saveSubscribers } from "./storage";
-import { formatDate } from "./utils";
+import {
+  loadSubscribers,
+  saveSubscribers,
+} from "./utils/store/subcribers.store";
+import { formatDate } from "./utils/utils";
 
 const bot = new TelegramBot(process.env.TG_TOKEN!, { polling: true });
 const parser = new Parser();
@@ -87,7 +90,6 @@ bot.onText(/\/latest/, async (msg) => {
     bot.sendMessage(msg.chat.id, "⚠️ Impossible de récupérer les articles.");
   }
 });
-
 
 bot.onText(/\/help/, (msg) => {
   const chatId = msg.chat.id.toString();
