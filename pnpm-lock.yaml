@@ -27,6 +27,9 @@ importers:
       '@types/node-telegram-bot-api':
         specifier: ^0.64.11
         version: 0.64.11
+      '@types/xml2js':
+        specifier: ^0.4.14
+        version: 0.4.14
       nodemon:
         specifier: ^3.1.10
         version: 3.1.10
@@ -89,6 +92,9 @@ packages:
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
+
+  '@types/xml2js@0.4.14':
+    resolution: {integrity: sha512-4YnrRemBShWRO2QjvUin8ESA41rH+9nQGLUGZV/1IDhi3SL9OhdpNC/MrulTWuptXKwhx/aDxE7toV0f/ypIXQ==}
 
   acorn-walk@8.3.4:
     resolution: {integrity: sha512-ueEepnujpqee2o5aIYnvHU6C0A42MNdsIDeqy5BydrkuC5R1ZuUFnm27EeFJGoEHJQgn3uleRvmTXaJgfXbt4g==}
@@ -1014,6 +1020,10 @@ snapshots:
       form-data: 2.5.5
 
   '@types/tough-cookie@4.0.5': {}
+
+  '@types/xml2js@0.4.14':
+    dependencies:
+      '@types/node': 24.7.2
 
   acorn-walk@8.3.4:
     dependencies:
