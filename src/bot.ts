@@ -28,7 +28,7 @@ bot.onText(/\/start/, (msg) => {
   bot.sendMessage(
     chatId,
     `👋 Bienvenue sur <b>${APP_CONFIG.name}</b> !\n${APP_CONFIG.description}\n\nCommandes disponibles :\n/start → S'abonner aux actualités\n/stop → Se désabonner\n/latest → Afficher les dernières actus\n/help → Afficher l'aide`,
-    { parse_mode: "HTML" }
+    { parse_mode: "HTML" },
   );
 });
 
@@ -49,19 +49,23 @@ bot.onText(/\/latest/, async (msg) => {
     }[] = [];
 
     for (const feedUrl of APP_CONFIG.defaultFeeds) {
-      const feed = await parser.parseURL(feedUrl);
-      const items = feed.items.slice(0, 10).map((item) => ({
-        title: item.title || "Untitled",
-        link: item.link || "",
-        pubDate: item.pubDate || "",
-        source: feed.title || feedUrl,
-      }));
-      allItems.push(...items);
+      try {
+        const feed = await parser.parseURL(feedUrl);
+        const items = feed.items.slice(0, 10).map((item) => ({
+          title: item.title || "Untitled",
+          link: item.link || "",
+          pubDate: item.pubDate || "",
+          source: feed.title || feedUrl,
+        }));
+        allItems.push(...items);
+      } catch (feedErr) {
+        console.error(`⚠️ Skipping feed (/latest) ${feedUrl}:`, feedErr);
+      }
     }
 
     allItems.sort(
       (a, b) =>
-        new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime()
+        new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime(),
     );
 
     const message =
@@ -73,11 +77,11 @@ bot.onText(/\/latest/, async (msg) => {
             `${i + 1}. <b>${item.title}</b>\n🔗 ${
               item.link
             }\n📅 <i>${formatDate(
-              item.pubDate
+              item.pubDate,
             )}</i>\n📰 <i>${item.source.replace(
               "Derniers articles - ",
-              ""
-            )}</i>`
+              "",
+            )}</i>`,
         )
         .join("\n\n");
 
@@ -100,7 +104,7 @@ bot.onText(/\/help/, (msg) => {
   bot.sendMessage(
     chatId,
     `🤔 Besoin d'aides ?\n\nCommandes disponibles :\n/start → S'abonner aux actualités\n/stop → Se désabonner\n/latest → Afficher les dernières actus\n/help → Afficher l'aide`,
-    { parse_mode: "HTML" }
+    { parse_mode: "HTML" },
   );
 });
 

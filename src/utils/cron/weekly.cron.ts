@@ -23,23 +23,27 @@ cron.schedule(WEEKLY_CRON_TASK, async () => {
     const allItems: Article[] = [];
 
     for (const feedUrl of APP_CONFIG.defaultFeeds) {
-      const feed = await parser.parseURL(feedUrl);
-      const items = feed.items
-        .filter((i) => i.pubDate && new Date(i.pubDate) >= oneWeekAgo)
-        .map((i) => ({
-          title: i.title || "Untitled",
-          link: i.link || "",
-          pubDate: i.pubDate || "",
-          source: feed.title || feedUrl,
-        }));
-      allItems.push(...items);
+      try {
+        const feed = await parser.parseURL(feedUrl);
+        const items = feed.items
+          .filter((i) => i.pubDate && new Date(i.pubDate) >= oneWeekAgo)
+          .map((i) => ({
+            title: i.title || "Untitled",
+            link: i.link || "",
+            pubDate: i.pubDate || "",
+            source: feed.title || feedUrl,
+          }));
+        allItems.push(...items);
+      } catch (feedErr) {
+        console.error(`⚠️ Skipping feed (weekly) ${feedUrl}:`, feedErr);
+      }
     }
 
     if (!allItems.length) return;
 
     allItems.sort(
       (a, b) =>
-        new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime()
+        new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime(),
     );
 
     const message =
@@ -50,11 +54,11 @@ cron.schedule(WEEKLY_CRON_TASK, async () => {
             `${i + 1}. <b>${item.title}</b>\n🔗 ${
               item.link
             }\n📅 <i>${formatDate(
-              item.pubDate
+              item.pubDate,
             )}</i>\n📰 <i>${item.source.replace(
               "Derniers articles - ",
-              ""
-            )}</i>`
+              "",
+            )}</i>`,
         )
         .join("\n\n");
 
