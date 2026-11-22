@@ -8,5 +8,7 @@ export const APP_CONFIG = {
     "https://news.google.com/rss/search?q=site:lemoniteur.fr/numerique/bim&hl=fr&gl=FR&ceid=FR:fr",
     "https://news.google.com/rss/search?q=site:lemoniteur.fr/numerique/intelligence-artificielle&hl=fr&gl=FR&ceid=FR:fr",
     "https://github.com/pyrevitlabs/pyRevit/releases.atom",
+    "https://github.com/microsoft/PowerToys/releases.atom",
+    "https://github.com/louislam/uptime-kuma/releases.atom",
   ],
 };

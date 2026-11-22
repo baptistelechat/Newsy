@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - Hourly weekday digest of new articles and a weekly recap, sent to all subscribers
 - Tracking of already-sent articles so the same news is never sent twice
 - pyRevit release notes feed, so new pyRevit versions show up in the digest
+- PowerToys and Uptime Kuma release notes feeds, so new versions show up in the digest
 
 ### Changed
 
